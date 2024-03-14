@@ -1,0 +1,10 @@
+cmd - go: install/update Tools
+
+
+Tools environment: GOPATH=/home/natan/.asdf/installs/golang/1.20/packages
+[info] Installing 7 tools at /home/natan/.asdf/installs/golang/1.20/packages/bin
+
+
+
+go mod init github.com/NatanSiilva/ms-wallet
+go mod tidy 
