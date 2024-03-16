@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/NatanSiilva/ms-wallet/internal/entity"
+	"github.com/NatanSiilva/ms-wallet/internal/event"
+	"github.com/NatanSiilva/ms-wallet/pkg/events"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -53,7 +55,11 @@ func TestCreateTransactionUseCase_Execute(t *testing.T) {
 			AccountIDTo:   account2.ID,
 			Amount:        100,
 		}
-		useCase := NewCreateTransactionUseCase(transactionGatewayMock, accountGatewayMock)
+
+		dispatcher := events.NewEventDispatcher()
+		event := event.NewTransactionCreated()
+
+		useCase := NewCreateTransactionUseCase(transactionGatewayMock, accountGatewayMock, dispatcher, event)
 		outputDTO, err := useCase.Execute(inputDTO)
 
 		assert.Nil(t, err)
