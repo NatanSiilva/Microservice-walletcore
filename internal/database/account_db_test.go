@@ -52,7 +52,7 @@ func (su *AccountDBTestSuite) TestFindById() {
 	err := su.accountDB.Save(account)
 	su.Nil(err)
 
-	accountDB, err := su.accountDB.FindById(account.ID)
+	accountDB, err := su.accountDB.FindByID(account.ID)
 
 	su.Nil(err)
 	su.Equal(account.ID, accountDB.ID)

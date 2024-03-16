@@ -1,4 +1,4 @@
-package createaccount
+package create_account
 
 import (
 	"testing"
@@ -31,7 +31,7 @@ func (mock *AccountGatewayMock) Save(account *entity.Account) error {
 	return args.Error(0)
 }
 
-func (mock *AccountGatewayMock) FindById(id string) (*entity.Account, error) {
+func (mock *AccountGatewayMock) FindByID(id string) (*entity.Account, error) {
 	args := mock.Called(id)
 	return args.Get(0).(*entity.Account), args.Error(1)
 }

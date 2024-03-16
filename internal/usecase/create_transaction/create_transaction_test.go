@@ -1,4 +1,4 @@
-package createtransaction
+package create_transaction
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ func (mock *AccountGatewayMock) Save(account *entity.Account) error {
 	return args.Error(0)
 }
 
-func (mock *AccountGatewayMock) FindById(id string) (*entity.Account, error) {
+func (mock *AccountGatewayMock) FindByID(id string) (*entity.Account, error) {
 	args := mock.Called(id)
 	return args.Get(0).(*entity.Account), args.Error(1)
 }
@@ -44,8 +44,8 @@ func TestCreateTransactionUseCase_Execute(t *testing.T) {
 		account2.Credit(1000)
 
 		accountGatewayMock := &AccountGatewayMock{}
-		accountGatewayMock.On("FindById", account1.ID).Return(account1, nil)
-		accountGatewayMock.On("FindById", account2.ID).Return(account2, nil)
+		accountGatewayMock.On("FindByID", account1.ID).Return(account1, nil)
+		accountGatewayMock.On("FindByID", account2.ID).Return(account2, nil)
 
 		transactionGatewayMock := &TransactionGatewayMock{}
 		transactionGatewayMock.On("Create", mock.Anything).Return(nil)

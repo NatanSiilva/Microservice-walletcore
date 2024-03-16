@@ -1,4 +1,4 @@
-package createaccount
+package create_account
 
 import (
 	"github.com/NatanSiilva/ms-wallet/internal/entity"
@@ -6,7 +6,7 @@ import (
 )
 
 type CreateAccountInputDTO struct {
-	ClientID string
+	ClientID string `json:"client_id"`
 }
 
 type CreateAccountOutputDTO struct {
@@ -18,27 +18,25 @@ type CreateAccountUseCase struct {
 	ClientGateway  gateway.ClientGateway
 }
 
-func NewCreateAccountUseCase(accountGateway gateway.AccountGateway, clientGateway gateway.ClientGateway) *CreateAccountUseCase {
+func NewCreateAccountUseCase(a gateway.AccountGateway, c gateway.ClientGateway) *CreateAccountUseCase {
 	return &CreateAccountUseCase{
-		AccountGateway: accountGateway,
-		ClientGateway:  clientGateway,
+		AccountGateway: a,
+		ClientGateway:  c,
 	}
 }
 
-func (useCase *CreateAccountUseCase) Execute(inputDTO CreateAccountInputDTO) (*CreateAccountOutputDTO, error) {
-	client, err := useCase.ClientGateway.Get(inputDTO.ClientID)
+func (uc *CreateAccountUseCase) Execute(input CreateAccountInputDTO) (*CreateAccountOutputDTO, error) {
+	client, err := uc.ClientGateway.Get(input.ClientID)
 	if err != nil {
 		return nil, err
 	}
-
 	account := entity.NewAccount(client)
-	err = useCase.AccountGateway.Save(account)
-
+	err = uc.AccountGateway.Save(account)
 	if err != nil {
 		return nil, err
 	}
-
-	return &CreateAccountOutputDTO{
+	output := &CreateAccountOutputDTO{
 		ID: account.ID,
-	}, nil
+	}
+	return output, nil
 }
