@@ -3,8 +3,8 @@ module github.com/NatanSiilva/ms-wallet
 go 1.20
 
 require (
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/go-chi/chi v1.5.5
-	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-sql-driver/mysql v1.8.0
 	github.com/google/uuid v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.18

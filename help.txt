@@ -8,3 +8,6 @@ Tools environment: GOPATH=/home/natan/.asdf/installs/golang/1.20/packages
 
 go mod init github.com/NatanSiilva/ms-wallet
 go mod tidy 
+
+
+mysql -uroot -p wallet

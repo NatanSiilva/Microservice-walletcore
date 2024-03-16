@@ -8,33 +8,9 @@ import (
 	"github.com/NatanSiilva/ms-wallet/internal/event"
 	"github.com/NatanSiilva/ms-wallet/internal/usecase/mocks"
 	"github.com/NatanSiilva/ms-wallet/pkg/events"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-type TransactionGatewayMock struct {
-	mock.Mock
-}
-
-func (mo *TransactionGatewayMock) Create(transaction *entity.Transaction) error {
-	args := mo.Called(transaction)
-	return args.Error(0)
-}
-
-type AccountGatewayMock struct {
-	mock.Mock
-}
-
-func (mock *AccountGatewayMock) Save(account *entity.Account) error {
-	args := mock.Called(account)
-	return args.Error(0)
-}
-
-func (mock *AccountGatewayMock) FindByID(id string) (*entity.Account, error) {
-	args := mock.Called(id)
-	return args.Get(0).(*entity.Account), args.Error(1)
-}
 
 func TestCreateTransactionUseCase_Execute(t *testing.T) {
 	client1, _ := entity.NewClient("client1", "j@j.com")
@@ -56,9 +32,10 @@ func TestCreateTransactionUseCase_Execute(t *testing.T) {
 
 	dispatcher := events.NewEventDispatcher()
 	eventTransaction := event.NewTransactionCreated()
+	eventBalance := event.NewBalanceUpdated()
 	ctx := context.Background()
 
-	uc := NewCreateTransactionUseCase(mockUow, dispatcher, eventTransaction)
+	uc := NewCreateTransactionUseCase(mockUow, dispatcher, eventTransaction, eventBalance)
 	output, err := uc.Execute(ctx, inputDto)
 	assert.Nil(t, err)
 	assert.NotNil(t, output)
