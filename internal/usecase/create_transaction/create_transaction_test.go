@@ -1,11 +1,14 @@
 package create_transaction
 
 import (
+	"context"
 	"testing"
 
 	"github.com/NatanSiilva/ms-wallet/internal/entity"
 	"github.com/NatanSiilva/ms-wallet/internal/event"
+	"github.com/NatanSiilva/ms-wallet/internal/usecase/mocks"
 	"github.com/NatanSiilva/ms-wallet/pkg/events"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -34,39 +37,31 @@ func (mock *AccountGatewayMock) FindByID(id string) (*entity.Account, error) {
 }
 
 func TestCreateTransactionUseCase_Execute(t *testing.T) {
-	t.Run("should create a transaction", func(t *testing.T) {
-		client1, _ := entity.NewClient("client1", "j@j1.com")
-		account1 := entity.NewAccount(client1)
-		account1.Credit(1000)
+	client1, _ := entity.NewClient("client1", "j@j.com")
+	account1 := entity.NewAccount(client1)
+	account1.Credit(1000)
 
-		client2, _ := entity.NewClient("client2", "j@j2.com")
-		account2 := entity.NewAccount(client2)
-		account2.Credit(1000)
+	client2, _ := entity.NewClient("client2", "j@j2.com")
+	account2 := entity.NewAccount(client2)
+	account2.Credit(1000)
 
-		accountGatewayMock := &AccountGatewayMock{}
-		accountGatewayMock.On("FindByID", account1.ID).Return(account1, nil)
-		accountGatewayMock.On("FindByID", account2.ID).Return(account2, nil)
+	mockUow := &mocks.UowMock{}
+	mockUow.On("Do", mock.Anything, mock.Anything).Return(nil)
 
-		transactionGatewayMock := &TransactionGatewayMock{}
-		transactionGatewayMock.On("Create", mock.Anything).Return(nil)
+	inputDto := CreateTransactionInputDTO{
+		AccountIDFrom: account1.ID,
+		AccountIDTo:   account2.ID,
+		Amount:        100,
+	}
 
-		inputDTO := CreateTransactionInputDTO{
-			AccountIDFrom: account1.ID,
-			AccountIDTo:   account2.ID,
-			Amount:        100,
-		}
+	dispatcher := events.NewEventDispatcher()
+	eventTransaction := event.NewTransactionCreated()
+	ctx := context.Background()
 
-		dispatcher := events.NewEventDispatcher()
-		event := event.NewTransactionCreated()
-
-		useCase := NewCreateTransactionUseCase(transactionGatewayMock, accountGatewayMock, dispatcher, event)
-		outputDTO, err := useCase.Execute(inputDTO)
-
-		assert.Nil(t, err)
-		assert.NotNil(t, outputDTO)
-		accountGatewayMock.AssertExpectations(t)
-		transactionGatewayMock.AssertExpectations(t)
-		accountGatewayMock.AssertNumberOfCalls(t, "FindById", 2)
-		transactionGatewayMock.AssertNumberOfCalls(t, "Create", 1)
-	})
+	uc := NewCreateTransactionUseCase(mockUow, dispatcher, eventTransaction)
+	output, err := uc.Execute(ctx, inputDto)
+	assert.Nil(t, err)
+	assert.NotNil(t, output)
+	mockUow.AssertExpectations(t)
+	mockUow.AssertNumberOfCalls(t, "Do", 1)
 }

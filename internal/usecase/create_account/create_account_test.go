@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/NatanSiilva/ms-wallet/internal/entity"
+	"github.com/NatanSiilva/ms-wallet/internal/usecase/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -37,25 +38,23 @@ func (mock *AccountGatewayMock) FindByID(id string) (*entity.Account, error) {
 }
 
 func TestCreateAccountUseCase_Execute(t *testing.T) {
-	t.Run("should create account", func(t *testing.T) {
-		client, _ := entity.NewClient("John Doe", "j@j.com")
-		clientGatewayMock := &ClientGatewayMock{}
-		clientGatewayMock.On("Get", client.ID).Return(client, nil)
+	client, _ := entity.NewClient("John Doe", "j@j")
+	clientMock := &mocks.ClientGatewayMock{}
+	clientMock.On("Get", client.ID).Return(client, nil)
 
-		accountGatewayMock := &AccountGatewayMock{}
-		accountGatewayMock.On("Save", mock.Anything).Return(nil)
+	accountMock := &mocks.AccountGatewayMock{}
+	accountMock.On("Save", mock.Anything).Return(nil)
 
-		useCase := NewCreateAccountUseCase(accountGatewayMock, clientGatewayMock)
-		inputDTO := CreateAccountInputDTO{
-			ClientID: client.ID,
-		}
-		outputDTO, err := useCase.Execute(inputDTO)
-
-		assert.Nil(t, err)
-		assert.NotNil(t, outputDTO)
-		clientGatewayMock.AssertExpectations(t)
-		accountGatewayMock.AssertExpectations(t)
-		clientGatewayMock.AssertNumberOfCalls(t, "Get", 1)
-		accountGatewayMock.AssertNumberOfCalls(t, "Save", 1)
-	})
+	uc := NewCreateAccountUseCase(accountMock, clientMock)
+	inputDto := CreateAccountInputDTO{
+		ClientID: client.ID,
+	}
+	output, err := uc.Execute(inputDto)
+	assert.Nil(t, err)
+	assert.NotNil(t, output.ID)
+	// asssert valid uuid
+	clientMock.AssertExpectations(t)
+	accountMock.AssertExpectations(t)
+	clientMock.AssertNumberOfCalls(t, "Get", 1)
+	accountMock.AssertNumberOfCalls(t, "Save", 1)
 }

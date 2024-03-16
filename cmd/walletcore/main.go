@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -13,11 +14,12 @@ import (
 	"github.com/NatanSiilva/ms-wallet/internal/web"
 	"github.com/NatanSiilva/ms-wallet/internal/web/webserver"
 	"github.com/NatanSiilva/ms-wallet/pkg/events"
+	"github.com/NatanSiilva/ms-wallet/pkg/uow"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 func connectToDatabase() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "root:root@tcp(172.18.0.2:3306)/wallet?charset=utf8&parseTime=True&loc=Local")
+	db, err := sql.Open("mysql", "root:root@tcp(172.19.0.2:3306)/wallet?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
 	}
@@ -37,11 +39,20 @@ func main() {
 
 	clientDb := database.NewClientDB(db)
 	accountDb := database.NewAccountDB(db)
-	transactionDb := database.NewTransactionDB(db)
 
+	ctx := context.Background()
+	uow := uow.NewUow(ctx, db)
+
+	uow.Register("AccountDB", func(tx *sql.Tx) interface{} {
+		return database.NewAccountDB(db)
+	})
+
+	uow.Register("TransactionDB", func(tx *sql.Tx) interface{} {
+		return database.NewTransactionDB(db)
+	})
+	createTransactionUseCase := create_transaction.NewCreateTransactionUseCase(uow, eventDispatcher, transactionCreatedEvent)
 	createClientUseCase := create_client.NewCreateClientUseCase(clientDb)
 	createAccountUseCase := create_account.NewCreateAccountUseCase(accountDb, clientDb)
-	createTransactionUseCase := create_transaction.NewCreateTransactionUseCase(transactionDb, accountDb, eventDispatcher, transactionCreatedEvent)
 
 	webserver := webserver.NewWebServer(":3000")
 
